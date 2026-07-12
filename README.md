@@ -2,7 +2,9 @@
 
 HiRead 是一款专为离线阅读打造的纯前端电子书阅读器。界面排版、骨架交互和配色体系**完全复刻了 Hivid IPTV 的象牙白极简美学**，专为追求纯净、极简和护眼阅读体验的读者设计。
 
-![HiRead Ivory-Clay Aesthetics](https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1200)
+| 📚 图书馆主页 (Overview) | 📖 全屏浸润式阅读 (Reading - 荷塘月色) |
+| :---: | :---: |
+| ![HiRead Library Overview](./photos/overview.png) | ![HiRead Fullscreen Reading](./photos/reading.png) |
 
 ---
 
@@ -76,6 +78,13 @@ reader/
 ## 📄 授权协议 (License)
 
 本项目基于 [MIT License](LICENSE) 协议开源。您可以自由地修改、分发及二次开发。
+
+---
+
+## ⚖️ 免责与版权声明 (Disclaimer & Copyright Statement)
+
+1. **演示内容版权**：本软件内嵌的演示截图中所展示的文本《荷塘月色》（作者：朱自清，1898-1948）属于**公有领域（Public Domain）**作品。根据相关法律法规，该作品的著作权保护期已届满，任何人均可免费使用，不存在任何侵犯版权之情况。
+2. **免责声明**：本软件（HiRead）仅作为电子书文件阅读解析的本地工具。用户导入的任何外部电子书均存储在本地浏览器沙盒（IndexedDB）中。本软件不提供、不分发任何受版权保护的电子书资源，若用户因导入未授权的受版权保护作品而产生纠纷，由用户自行承担相应责任。
 
 ---
 
