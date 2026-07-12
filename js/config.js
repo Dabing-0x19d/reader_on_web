@@ -1,0 +1,1 @@
+﻿window.HRConfig = { DEFAULT_BOOKS: [], CATEGORIES: [ { key: "all", label: "全部图书" }, { key: "classics", label: "国学经典" }, { key: "modern", label: "现代文学" }, { key: "local", label: "本地导入" } ], STORAGE_KEY: "hiread-state-v1" }; Object.freeze(window.HRConfig);

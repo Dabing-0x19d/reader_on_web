@@ -1,0 +1,82 @@
+# HiRead - 极简离线电子书阅读器
+
+HiRead 是一款专为离线阅读打造的纯前端电子书阅读器。界面排版、骨架交互和配色体系**完全复刻了 Hivid IPTV 的象牙白极简美学**，专为追求纯净、极简和护眼阅读体验的读者设计。
+
+![HiRead Ivory-Clay Aesthetics](https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=1200)
+
+---
+
+## 🎨 极简美学与交互设计 (Design Philosophy)
+
+*   **象牙白与陶土橘视觉体系 (Ivory & Clay)**：背景使用温润护眼的象牙白 (`#faf9f5`)，文字采用极具对比度却不刺眼的苹果深碳灰 (`#1d1d1f`)，并以暖陶土色 (`#c46849`) 作为激活、划线与强调的核心视觉锚点。
+*   **高对比度大字号调优**：专门优化了侧边菜单及目录页签（字号不小于 `14px` - `15px` 粗体），将下部卡片和所有的参数指标设为纯黑（`#000000`），保证在各种分辨率下均拥有极高清晰度。
+*   **全屏浸润式沉浸**：
+    *   *双药丸胶囊顶栏*：左侧显示《书名》与章节，右侧显示总体阅读进度。
+    *   *全书总体进度算法*：采用插值算法计算整本书进度，比单章滚动更直观：
+        $$\text{全书进度} = \frac{\text{当前章节索引} + \frac{\text{当前章节滚动百分比}}{100}}{\text{书籍总章节数}} \times 100\%$$
+    *   *左侧悬浮圆形目录抽屉*：点击左侧边缘的圆形 `☰` 按钮，可拉出高度仅全屏 $50\%$、上下垂直居中、不遮挡主要正文的专属目录。**打开时系统会自动将当前正在阅读的章节滚动定位至抽屉正中央**。
+    *   *滑动防误触自动下一章*：滑到底部自动滑出陶土橘提示框并进行 1.2s 倒计时。若向上滚动超过 30px 则瞬间收回提示并撤销跳转。
+*   **EPG 映射底栏 (260px)**：下部左侧提供完整的“书签与划线金句 Timeline”；右侧提供格式、字号、全屏阅读宽度（支持在 $50\% \sim 95\%$ 之间按 $5\%$ 步长自由缩放）等统计控制台。
+
+---
+
+## ⚡ 核心技术特点 (Technical Features)
+
+1.  **CORS-Free 纯本地运行**：采用经典的 Revealing Module Pattern 封装 UI 组件，完全消除传统前端 ES Modules 的本地跨域 CORS 拦截问题。**无需运行任何 Node.js 服务，直接在本地双击 `index.html` 即可完美运行所有功能！**
+2.  **大容量沙盒存储 (IndexedDB)**：摒弃了容量仅 5MB 的 localStorage，采用 IndexedDB 对图书数据进行底层二进制存储与管理，支持无限导入和持久保存多达百本小说。
+3.  **TXT 智能正则切章**：使用智能正则表达式自动检测并分割章节，在检测不到章节标头时启动“等长保底切分”算法，防止超长文本一次性载入卡死 DOM。
+4.  **EPUB 纯前端解压解析**：通过离线引入 `JSZip`，完全在客户端解压 `.epub` 包，解析 `container.xml`、`content.opf` 清单，提取元数据和 XHTML，并将包内媒体图片直接转化为 Base64 DataURL 写入文本，实现图片的零错误离线显示。
+5.  **拖拽一键导入**：支持将本地的 `.txt` / `.epub` 电子书文件直接拖入浏览器任何区域秒级导入。
+
+---
+
+## 📂 项目文件结构 (Architecture)
+
+```bash
+reader/
+├── index.html         # 网页结构主入口骨架
+├── walkthrough.md     # 本项目迭代构建与调优过程报告
+├── css/
+│   └── style.css      # 象牙白与陶土橘 EPG 视觉层设计系统
+└── js/
+    ├── config.js      # 全局配置字典
+    ├── storage.js     # IndexedDB 存取控制与阅读进度历史持久化层
+    ├── parser.js      # EPUB/TXT 核心解析与章节切割器
+    ├── ui_core.js     # UI主模块：管理全局状态 state，缓存DOM roots，接管视图切换
+    ├── ui_reader.js   # UI阅读模块：控制正文 HTML 渲染、排版设置、全屏控制与滚动百分比
+    ├── ui_lists.js    # UI列表模块：渲染图书列表、页签分类、侧栏章节目录及书签
+    ├── ui_features.js # UI功能模块：划线金句Timeline、字数统计更新、计时器及全屏目录
+    └── app.js         # 应用生命周期主装配与文件拖拽上传引导层
+```
+
+---
+
+## 🚀 快速开始 (Quick Start)
+
+由于本项目采用了纯离线无跨域的模块化设计，运行它不需要任何复杂的环境搭建：
+
+1.  克隆本项目到本地：
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+    ```
+2.  进入 `reader` 目录，直接在浏览器中**双击打开 `index.html`** 即可开启阅读。
+3.  点击左下角的 **“导入图书”** 按钮，或者将本地的 `.txt` / `.epub` 电子书**拖入浏览器**，应用会自动解析切章，并存入您本地的浏览器数据库中。
+
+---
+
+## 🔧 开发扩展与二次开发 (Development)
+
+如果您希望对本项目进行二次开发，由于 UI 层已完成精巧解耦，您可以直接在对应的模块中修改相关代码：
+*   **全局状态微调**：在 [js/ui_core.js](file:///c:/Users/m/Desktop/HarmonyOS/reader/js/ui_core.js) 的 `state` 对象中添加属性，并在 `HRUi` 命名空间下定义扩展方法。
+*   **修改排版与主题**：直接编辑 [css/style.css](file:///c:/Users/m/Desktop/HarmonyOS/reader/css/style.css) 中的 CSS 变量及组件样式即可无缝修改配色体系。
+*   **定制解析正则**：如果导入的 TXT 切章格式比较特殊，可以在 [js/parser.js](file:///c:/Users/m/Desktop/HarmonyOS/reader/js/parser.js) 的 `parseTXT()` 方法中微调章节提取正则。
+
+---
+
+## 📄 授权协议 (License)
+
+本项目基于 [MIT License](LICENSE) 协议开源。您可以自由地修改、分发及二次开发。
+
+---
+
+*“在象牙白的纸墨间，寻找最纯粹的阅读之美。”*

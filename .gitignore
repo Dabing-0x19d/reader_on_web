@@ -1,0 +1,9 @@
+# OS files
+Thumbs.db
+db.db
+*.DS_Store
+.DS_Store
+
+# Local workspace specific files
+.gemini/
+*.log

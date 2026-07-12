@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HiRead 电子书阅读器</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <!-- 引入 JSZip 用于解析 EPUB 压缩包 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+    <!-- 左侧主导航栏 (完全复刻 IPTV/Hivid) -->
+    <div class="sidebar">
+        <div class="logo">Hi<span>Read</span></div>
+        <div class="nav-links">
+            <div class="nav-item active" data-view="library">图书库</div>
+            <div class="nav-item" data-view="reading">当前阅读</div>
+            <div class="nav-item" data-view="favorites">我的收藏</div>
+            <div class="nav-item" data-view="history">历史记录</div>
+        </div>
+        <div class="sidebar-actions">
+            <button class="btn btn-primary" data-action="import" style="width: 100%;">导入图书</button>
+        </div>
+    </div>
+
+    <!-- 主体区域 -->
+    <div class="main-content">
+        <!-- 顶部工具栏 -->
+        <div class="top-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索流媒体图书、作者或章节...">
+            </div>
+            <div class="actions-group">
+                <button class="btn btn-primary" id="btnAddBookmark">添加书签</button>
+            </div>
+        </div>
+
+        <!-- 应用核心主体 -->
+        <div class="app-body">
+            <!-- 左侧分类与列表面板 (书库/目录切换) -->
+            <div class="list-section">
+                <div class="category-tabs" id="categoryTabs">
+                    <!-- 由 JS 渲染，例如：全部图书、国学经典... 或 目录、书签 -->
+                </div>
+                <div class="item-list" id="itemList">
+                    <!-- 由 JS 动态填入书本或章节项 -->
+                </div>
+            </div>
+
+            <!-- 右侧阅读与统计区域 -->
+            <div class="reader-section">
+                <!-- 阅读视口 (替代原视频播放器) -->
+                <div class="reader-container">
+                    <!-- 吐司通知容器 -->
+                    <div class="toast-container" id="toastContainer"></div>
+
+                    <!-- 章节状态条 -->
+                    <div class="reader-status-strip">
+                        <span><span class="dot" id="statusDot"></span><span id="statusText">IDLE</span></span>
+                    </div>
+
+                    <!-- 右上角控制区(进度与全屏) -->
+                    <div class="reader-controls-top">
+                        <div class="reader-percentage" id="readerPercentage">0.0%</div>
+                        <button class="reader-btn-fullscreen" id="btnFullscreen" title="网页全屏">全屏</button>
+                    </div>
+
+                    <!-- 翻页模式下的左右热区 -->
+                    <div class="page-nav-overlay nav-left" id="pageNavLeft">‹</div>
+                    <div class="page-nav-overlay nav-right" id="pageNavRight">›</div>
+
+                    <!-- 富文本内容展示区域 -->
+                    <div class="reader-content-frame font-serif" id="readerContentFrame">
+                        <!-- 正文 HTML 由 JS 写入 -->
+                    </div>
+
+                    <!-- 底部提示栏 -->
+                    <div class="reader-bottom-prompt" id="readerBottomPrompt">
+                        <span id="bottomPromptText">即将阅读下一节：章节名称...</span>
+                        <span class="cancel-hint">（向上滚动以取消）</span>
+                    </div>
+
+                    <!-- 全屏专属章节圆形按钮 -->
+                    <button class="reader-fullscreen-toc-btn" id="btnFullscreenTocToggle" title="查看目录">☰</button>
+
+                    <!-- 全屏专属章节列表面板 -->
+                    <div class="reader-fullscreen-toc-panel" id="readerFullscreenTocPanel">
+                        <div class="fs-toc-header">书籍目录</div>
+                        <div class="fs-toc-body" id="fsTocBody"></div>
+                    </div>
+
+                    <!-- 初始未选书状态遮罩 (类似原视频 Placeholder) -->
+                    <div class="reader-placeholder" id="readerPlaceholder">
+                        <div class="placeholder-cover" id="placeholderCover">HiRead</div>
+                        <div class="video-title">电子书阅读核心区域</div>
+                        <div class="video-sub">选择图书后，使用内置渲染引擎解析阅读(支持 TXT / EPUB)</div>
+                    </div>
+                </div>
+
+                <!-- 下部书签面板与技术控制面板 (完全复刻原 EPG 区域) -->
+                <div class="bottom-panel">
+                    <!-- 左侧书签与笔记记录 (对应 EPG) -->
+                    <div class="notes-box">
+                        <div class="panel-title">
+                            <span>当前图书书签与划线</span>
+                            <span class="action-link" id="btnClearNotes" style="display: none;">清空当前</span>
+                        </div>
+                        <div class="notes-timeline" id="notesTimeline">
+                            <div class="notes-empty">选择图书后即可查看书签与划线</div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧排版与图书参数面板 (对应原技术参数卡) -->
+                    <div class="stats-box">
+                        <div class="stats-title">
+                            <span>排版与技术参数</span>
+                            <small id="bookFormatBadge">N/A</small>
+                        </div>
+                        <div class="stats-item">
+                            <span>排版字体</span>
+                            <div class="ctrl-row" style="width: 130px; margin-top: 0;">
+                                <div class="ctrl-btn active" id="btnFontSerif">宋体</div>
+                                <div class="ctrl-btn" id="btnFontSans">黑体</div>
+                            </div>
+                        </div>
+                        <div class="stats-item">
+                            <span>字号调整</span>
+                            <div class="ctrl-row" style="width: 130px; margin-top: 0;">
+                                <div class="ctrl-btn" id="btnDecFont">A -</div>
+                                <div class="ctrl-btn" id="btnIncFont">A +</div>
+                            </div>
+                        </div>
+                        <div class="stats-item" id="ctrlFullscreenWidth" style="display: none;">
+                            <span>全屏宽度</span>
+                            <div class="ctrl-row" style="width: 130px; margin-top: 0;">
+                                <div class="ctrl-btn" id="btnDecWidth">W -</div>
+                                <div class="ctrl-btn" id="btnIncWidth">W +</div>
+                            </div>
+                        </div>
+                        <div class="stats-item">
+                            <span>总字数</span>
+                            <span id="statWordCount">- 字</span>
+                        </div>
+                        <div class="stats-item">
+                            <span>章节字数</span>
+                            <span id="statChapterWordCount">- 字</span>
+                        </div>
+                        <div class="stats-item">
+                            <span>阅读用时</span>
+                            <span id="statReadTime">0 分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入图书弹窗 (Modal) -->
+    <div class="modal-mask" id="importModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>导入本地电子书</h2>
+                <button class="modal-close" data-close>×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>拖拽或点击选择文件</label>
+                    <label class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" accept=".txt,.epub">
+                        <span>将 .txt / .epub 文件拖到这里，或点击此处上传</span>
+                    </label>
+                    <div class="hint">系统会自动提取 TXT 章节目录，并原生解压缩 EPUB 文件。数据保存在本地浏览器中。</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close>取消</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- 脚本加载 -->
+    <script src="./js/config.js"></script>
+    <script src="./js/storage.js"></script>
+    <script src="./js/parser.js"></script>
+    <script src="./js/ui_core.js"></script>
+    <script src="./js/ui_reader.js"></script>
+    <script src="./js/ui_lists.js"></script>
+    <script src="./js/ui_features.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+</html>
